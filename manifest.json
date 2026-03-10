@@ -1,10 +1,11 @@
 {
-  "name": "Nightscout Stats",
+  "name": "NS Stats",
   "short_name": "NS Stats",
-  "start_url": "./ns-stats.html",
+  "start_url": "/index.html",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#111111",
-  "theme_color": "#111111",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "icons": [
     {
       "src": "icon-192.png",
