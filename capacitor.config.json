@@ -1,0 +1,6 @@
+{
+  "appId": "com.mstry9.nsstats",
+  "appName": "NS Stats",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}
