@@ -9,30 +9,17 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22 # Matching the version your CLI requires
+          node-version: 22
 
       - name: Install Dependencies
         run: |
           npm install
-          # We force install the iOS platform package specifically
           npm install @capacitor/ios
 
       - name: Create Native iOS Project
         run: |
-          # This MUST run successfully. If it fails, the build stops here.
           npx cap add ios
           npx cap sync ios
-
-      - name: Verify Project Exists
-        run: |
-          # This checks if the file actually exists before we try to build it
-          if [ -d "ios/App/App.xcworkspace" ]; then
-            echo "SUCCESS: iOS project folder created."
-          else
-            echo "ERROR: iOS project folder was NOT created. Checking logs..."
-            ls -R ios || echo "ios folder does not even exist."
-            exit 1
-          fi
 
       - name: Build and Sign
         env:
@@ -40,13 +27,13 @@ jobs:
           APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
           APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
         run: |
-          # Prepare the Apple Key
+          # Prepare the Apple Key for signing
           mkdir -p ~/.private_keys
           echo "$APPSTORE_P8_KEY" > ~/.private_keys/AuthKey_$APPSTORE_KEY_ID.p8
           
-          # Run the build
+          # Target the .xcodeproj (Fixes the "xcworkspace not found" error)
           xcodebuild archive \
-            -workspace ios/App/App.xcworkspace \
+            -project ios/App/App.xcodeproj \
             -scheme App \
             -archivePath App.xcarchive \
             -destination 'generic/platform=iOS' \
