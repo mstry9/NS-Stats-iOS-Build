@@ -1,0 +1,12 @@
+{
+  "name": "ns-stats-ios",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "echo 'No build step needed for plain HTML'"
+  },
+  "dependencies": {
+    "@capacitor/core": "latest",
+    "@capacitor/cli": "latest",
+    "@capacitor/ios": "latest"
+  }
+}
