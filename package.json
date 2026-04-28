@@ -1,5 +1,6 @@
 {
-  "name": "ns-stats-app",
+  "name": "ns-stats-ios",
+  "version": "1.0.0",
   "dependencies": {
     "@capacitor/core": "latest",
     "@capacitor/ios": "latest",
