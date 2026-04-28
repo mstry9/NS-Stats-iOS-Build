@@ -14,19 +14,12 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          # 1. Install Capacitor tools
           npm install
-          
-          # 2. Clean any old, broken iOS folders to ensure a fresh workspace
+          # Force a clean native project creation
           rm -rf ios
-          
-          # 3. Create the native iOS project (this generates App.xcworkspace)
           npx cap add ios
-          
-          # 4. Inject your Team ID directly into the project configuration
+          # Manually assign your Apple Team ID to the project file
           sed -i '' 's/DEVELOPMENT_TEAM = "";/DEVELOPMENT_TEAM = 28962GZ9UY;/g' ios/App/App.xcodeproj/project.pbxproj
-          
-          # 5. Move your 'www' folder files into the native app container
           npx cap sync ios
 
       - name: Build Archive
@@ -35,15 +28,12 @@ jobs:
           APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
           APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
         run: |
-          # Create the private key file Apple requires for signing
+          # 1. Setup the Auth Key file
           mkdir -p ~/.private_keys
           echo "$APPSTORE_P8_KEY" > ~/.private_keys/AuthKey_$APPSTORE_KEY_ID.p8
           
-          # Move into the folder where Capacitor created the workspace
-          cd ios/App
-          
-          # Compile the app into an Archive (.xcarchive)
-          xcodebuild archive \
+          # 2. Run the archive command directly FROM the ios/App directory
+          cd ios/App && xcodebuild archive \
             -workspace App.xcworkspace \
             -scheme App \
             -configuration Release \
