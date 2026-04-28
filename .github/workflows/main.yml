@@ -1,0 +1,25 @@
+name: Build iOS
+on: [push]
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install & Sync
+        run: |
+          npm install
+          npx cap add ios
+          npx cap sync ios
+      - name: Archive and Export
+        env:
+          APPSTORE_P8_KEY: ${{ secrets.APPSTORE_P8_KEY }}
+          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+        run: |
+          cd ios/App
+          # This compiles your 'www' folder into the actual app
+          xcodebuild archive -workspace App.xcworkspace -scheme App -archivePath App.xcarchive
