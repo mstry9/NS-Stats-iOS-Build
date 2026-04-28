@@ -17,7 +17,7 @@ jobs:
           npm install
           rm -rf ios
           npx cap add ios
-          # We update the Team ID in the Project file directly
+          # FORCE Team ID into every configuration block
           sed -i '' 's/DEVELOPMENT_TEAM = "";/DEVELOPMENT_TEAM = 28962GZ9UY;/g' ios/App/App.xcodeproj/project.pbxproj
           npx cap sync ios
 
@@ -32,13 +32,12 @@ jobs:
           
           cd ios/App
           
-          # NEW FIX: We point to the .xcodeproj instead of the .xcworkspace
-          # Modern Capacitor projects use the Project file directly
           xcodebuild archive \
             -project App.xcodeproj \
             -scheme App \
             -configuration Release \
             -archivePath App.xcarchive \
+            -destination "generic/platform=iOS" \
             -allowProvisioningUpdates \
             -authenticationKeyID $APPSTORE_KEY_ID \
             -authenticationKeyIssuerID $APPSTORE_ISSUER_ID \
