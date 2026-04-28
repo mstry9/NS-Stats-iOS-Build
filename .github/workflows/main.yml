@@ -1,25 +1,44 @@
 name: Build iOS
 on: [push]
+
 jobs:
   build:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-      - name: Install & Sync
+          node-version: 20 # You can keep 20 for now; it's stable.
+
+      - name: Install Dependencies
         run: |
           npm install
           npx cap add ios
           npx cap sync ios
-      - name: Archive and Export
+
+      - name: Build Archive
         env:
           APPSTORE_P8_KEY: ${{ secrets.APPSTORE_P8_KEY }}
           APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
           APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
         run: |
           cd ios/App
-          # This compiles your 'www' folder into the actual app
-          xcodebuild archive -workspace App.xcworkspace -scheme App -archivePath App.xcarchive
+          # This command builds the app without requiring a manual 'signing' setup in Xcode
+          xcodebuild archive \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -archivePath App.xcarchive \
+            -allowProvisioningUpdates \
+            -authenticationKeyID $APPSTORE_KEY_ID \
+            -authenticationKeyIssuerID $APPSTORE_ISSUER_ID \
+            -authenticationKeyPath $(pwd)/AuthKey.p8
+            
+      - name: Upload Build Logs (If it fails)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcode-build-logs
+          path: ~/Library/Developer/Xcode/DerivedData/**/Logs/Build/*.log
