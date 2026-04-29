@@ -3,14 +3,10 @@ on: [push]
 
 jobs:
   build:
-    # Changed to macos-15 (Sequoia) which carries the newest Xcode
-    runs-on: macos-15
+    # Use the specific macOS 26 runner for Xcode 26 support
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
-
-      - name: Force Latest Xcode
-        # This selects the version of Xcode required by Apple for iOS 26 SDK
-        run: sudo xcode-select -s /Applications/Xcode_26.app/Contents/Developer
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -23,6 +19,7 @@ jobs:
           rm -rf ios
           npx cap add ios
           npx cap sync ios
+          # Use your correct Team ID
           sed -i '' 's/DEVELOPMENT_TEAM = "";/DEVELOPMENT_TEAM = 28962GZ9UY;/g' ios/App/App.xcodeproj/project.pbxproj
 
       - name: Build Archive & Export IPA
@@ -43,7 +40,7 @@ jobs:
             -authenticationKeyPath ~/.private_keys/AuthKey_$APPSTORE_KEY_ID.p8 \
             DEVELOPMENT_TEAM=28962GZ9UY
           
-          echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>method</key><string>app-store</string><key>teamID</key><string>28962GZ9UY</string><key>uploadBitcode</key><false/><key>compileBitcode</key><false/><key>signingStyle</key><string>automatic</string></dict></plist>' > exportOptions.plist
+          echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://apple.com"><plist version="1.0"><dict><key>method</key><string>app-store</string><key>teamID</key><string>28962GZ9UY</string><key>uploadBitcode</key><false/><key>compileBitcode</key><false/><key>signingStyle</key><string>automatic</string></dict></plist>' > exportOptions.plist
           
           xcodebuild -exportArchive \
             -archivePath App.xcarchive -exportOptionsPlist exportOptions.plist -exportPath output \
@@ -58,10 +55,3 @@ jobs:
           issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
           api-key-id: ${{ secrets.APPSTORE_KEY_ID }}
           api-private-key: ${{ secrets.APPSTORE_P8_KEY }}
-
-      - name: Save IPA as Artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: NS-Stats-IPA
-          path: ios/App/output/*.ipa
