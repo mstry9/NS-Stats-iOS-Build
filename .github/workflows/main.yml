@@ -14,7 +14,7 @@ jobs:
         with:
           node-version: 22
 
-      - name: Install Dependencies
+      - name: Install & Sync
         run: |
           npm install
           rm -rf ios
@@ -23,9 +23,14 @@ jobs:
           
       - name: Generate Icons
         run: |
-          # This command looks in the /assets folder for icon.png by default
           npx capacitor-assets generate --ios
           
+      - name: Disable Encryption Warning
+        run: |
+          # This forces the "No Encryption" setting into the actual Apple file
+          /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" ios/App/App/Info.plist || \
+          /usr/libexec/PlistBuddy -c "Set :ITSAppUsesNonExemptEncryption false" ios/App/App/Info.plist
+
       - name: Lock Team ID
         run: |
           sed -i '' 's/DEVELOPMENT_TEAM = "";/DEVELOPMENT_TEAM = 28962GZ9UY;/g' ios/App/App.xcodeproj/project.pbxproj
