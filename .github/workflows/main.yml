@@ -12,6 +12,7 @@ jobs:
       - name: Prepare Project
         run: |
           npm install
+          rm -rf ios
           npx cap add ios
           npx cap sync ios
 
@@ -26,7 +27,8 @@ jobs:
           
           cd ios/App
           
-          # Using your ACTUAL Team ID: 209155482
+          # Force the build to use your ID: 209155482
+          # We use 'development' method to satisfy Xcode's initial check
           xcodebuild archive \
             -project App.xcodeproj \
             -scheme App \
@@ -34,15 +36,16 @@ jobs:
             -archivePath App.xcarchive \
             -destination "generic/platform=iOS" \
             -allowProvisioningUpdates \
+            -allowProvisioningDeviceRegistration \
             -authenticationKeyID $APPSTORE_KEY_ID \
             -authenticationKeyIssuerID $APPSTORE_ISSUER_ID \
             -authenticationKeyPath ~/.private_keys/AuthKey_$APPSTORE_KEY_ID.p8 \
-            DEVELOPMENT_TEAM=209155482 \
-            CODE_SIGN_STYLE=Automatic
+            DEVELOPMENT_TEAM=209155482
             
       - name: Upload Result
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: NS-Stats-Build-IPA
-          path: ios/App/App.xcarchive
+          name: NS-Stats-Build-Archive
+          path: |
+            ios/App/App.xcarchive
