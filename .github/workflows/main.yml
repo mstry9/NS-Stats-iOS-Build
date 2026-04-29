@@ -14,7 +14,7 @@ jobs:
         with:
           node-version: 22
 
-      - name: Install & Sync
+      - name: Install Dependencies
         run: |
           npm install
           rm -rf ios
@@ -23,8 +23,8 @@ jobs:
           
       - name: Generate Icons
         run: |
-          # This creates all required Apple icon sizes from your 512px image
-          npx capacitor-assets generate --ios --icon-path www/icon-512.png
+          # This command looks in the /assets folder for icon.png by default
+          npx capacitor-assets generate --ios
           
       - name: Lock Team ID
         run: |
