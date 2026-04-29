@@ -5,5 +5,8 @@
     "@capacitor/core": "latest",
     "@capacitor/ios": "latest",
     "@capacitor/cli": "latest"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "latest"
   }
 }
