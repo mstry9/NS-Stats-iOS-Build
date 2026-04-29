@@ -1,15 +1,18 @@
 name: Build iOS
 on: [push]
+
 jobs:
   build:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: Prepare Project
+      - name: Install & Sync
         run: |
           npm install
           rm -rf ios
@@ -22,13 +25,13 @@ jobs:
           APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
           APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
         run: |
+          # 1. Setup the Auth Key file for Apple's servers
           mkdir -p ~/.private_keys
           echo "$APPSTORE_P8_KEY" > ~/.private_keys/AuthKey_$APPSTORE_KEY_ID.p8
           
           cd ios/App
           
-          # Force the build to use your ID: 209155482
-          # We use 'development' method to satisfy Xcode's initial check
+          # 2. Build the app using your correct Team ID: 209155482
           xcodebuild archive \
             -project App.xcodeproj \
             -scheme App \
@@ -41,11 +44,9 @@ jobs:
             -authenticationKeyIssuerID $APPSTORE_ISSUER_ID \
             -authenticationKeyPath ~/.private_keys/AuthKey_$APPSTORE_KEY_ID.p8 \
             DEVELOPMENT_TEAM=209155482
-            
-      - name: Upload Result
-        if: always()
+
+      - name: Upload Finished App
         uses: actions/upload-artifact@v4
         with:
-          name: NS-Stats-Build-Archive
-          path: |
-            ios/App/App.xcarchive
+          name: NS-Stats-App-Archive
+          path: ios/App/App.xcarchive
