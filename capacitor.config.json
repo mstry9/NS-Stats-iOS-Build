@@ -2,7 +2,6 @@
   "appId": "com.mstry9.stats",
   "appName": "NS_Stats",
   "webDir": "www",
-  "bundledWebRuntime": false,
   "ios": {
     "appleTeamId": "28962GZ9UY"
   }
