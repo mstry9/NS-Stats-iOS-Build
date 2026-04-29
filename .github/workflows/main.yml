@@ -1,11 +1,11 @@
 name: Build and Upload to TestFlight
 on: 
   push:
-  workflow_dispatch: # This adds the "Run workflow" button to the Actions tab
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: macos-26 # Using the required runner for iOS 26 SDK
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
 
@@ -20,7 +20,14 @@ jobs:
           rm -rf ios
           npx cap add ios
           npx cap sync ios
-          # Lock in your Team ID: 28962GZ9UY
+          
+      - name: Generate Icons
+        run: |
+          # This creates all required Apple icon sizes from your 512px image
+          npx capacitor-assets generate --ios --icon-path www/icon-512.png
+          
+      - name: Lock Team ID
+        run: |
           sed -i '' 's/DEVELOPMENT_TEAM = "";/DEVELOPMENT_TEAM = 28962GZ9UY;/g' ios/App/App.xcodeproj/project.pbxproj
 
       - name: Build Archive & Export IPA
@@ -33,7 +40,6 @@ jobs:
           echo "$APPSTORE_P8_KEY" > ~/.private_keys/AuthKey_$APPSTORE_KEY_ID.p8
           cd ios/App
           
-          # 1. Archive the project
           xcodebuild archive \
             -project App.xcodeproj -scheme App -configuration Release \
             -archivePath App.xcarchive -destination "generic/platform=iOS" \
@@ -42,10 +48,8 @@ jobs:
             -authenticationKeyPath ~/.private_keys/AuthKey_$APPSTORE_KEY_ID.p8 \
             DEVELOPMENT_TEAM=28962GZ9UY
           
-          # 2. Create Export Options for TestFlight
           echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://apple.com"><plist version="1.0"><dict><key>method</key><string>app-store</string><key>teamID</key><string>28962GZ9UY</string><key>uploadBitcode</key><false/><key>compileBitcode</key><false/><key>signingStyle</key><string>automatic</string></dict></plist>' > exportOptions.plist
           
-          # 3. Export the actual .ipa file
           xcodebuild -exportArchive \
             -archivePath App.xcarchive -exportOptionsPlist exportOptions.plist -exportPath output \
             -allowProvisioningUpdates -authenticationKeyID $APPSTORE_KEY_ID \
@@ -59,10 +63,3 @@ jobs:
           issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
           api-key-id: ${{ secrets.APPSTORE_KEY_ID }}
           api-private-key: ${{ secrets.APPSTORE_P8_KEY }}
-
-      - name: Save IPA as Artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: NS-Stats-IPA
-          path: ios/App/output/*.ipa
