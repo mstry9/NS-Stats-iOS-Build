@@ -1,4 +1,4 @@
-name: Build iOS
+name: Build and Upload to TestFlight
 on: [push]
 
 jobs:
@@ -6,18 +6,22 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: Prepare Project
+      - name: Install & Sync
         run: |
           npm install
+          rm -rf ios
           npx cap add ios
           npx cap sync ios
+          # Lock in your Team ID
           sed -i '' 's/DEVELOPMENT_TEAM = "";/DEVELOPMENT_TEAM = 28962GZ9UY;/g' ios/App/App.xcodeproj/project.pbxproj
 
-      - name: Build Archive
+      - name: Build Archive & Export IPA
         env:
           APPSTORE_P8_KEY: ${{ secrets.APPSTORE_P8_KEY }}
           APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
@@ -27,7 +31,7 @@ jobs:
           echo "$APPSTORE_P8_KEY" > ~/.private_keys/AuthKey_$APPSTORE_KEY_ID.p8
           cd ios/App
           
-          # 1. Create the Archive
+          # 1. Archive the project
           xcodebuild archive \
             -project App.xcodeproj -scheme App -configuration Release \
             -archivePath App.xcarchive -destination "generic/platform=iOS" \
@@ -36,16 +40,26 @@ jobs:
             -authenticationKeyPath ~/.private_keys/AuthKey_$APPSTORE_KEY_ID.p8 \
             DEVELOPMENT_TEAM=28962GZ9UY
           
-          # 2. Export the .ipa file (The one for TestFlight)
+          # 2. Create Export Options for TestFlight
           echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://apple.com"><plist version="1.0"><dict><key>method</key><string>app-store</string><key>teamID</key><string>28962GZ9UY</string><key>uploadBitcode</key><false/><key>compileBitcode</key><false/><key>signingStyle</key><string>automatic</string></dict></plist>' > exportOptions.plist
           
+          # 3. Export the actual .ipa file
           xcodebuild -exportArchive \
             -archivePath App.xcarchive -exportOptionsPlist exportOptions.plist -exportPath output \
             -allowProvisioningUpdates -authenticationKeyID $APPSTORE_KEY_ID \
             -authenticationKeyIssuerID $APPSTORE_ISSUER_ID \
             -authenticationKeyPath ~/.private_keys/AuthKey_$APPSTORE_KEY_ID.p8
 
-      - name: Upload IPA
+      - name: Upload to TestFlight
+        uses: apple-actions/upload-testflight-build@v1
+        with:
+          app-path: 'ios/App/output/App.ipa'
+          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_P8_KEY }}
+
+      - name: Save IPA as Artifact (Optional)
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: NS-Stats-IPA
