@@ -1,5 +1,6 @@
 name: Build iOS
 on: [push]
+
 jobs:
   build:
     runs-on: macos-latest
@@ -14,7 +15,6 @@ jobs:
           npm install
           npx cap add ios
           npx cap sync ios
-          # We use the Team ID from your Profile: 28962GZ9UY
           sed -i '' 's/DEVELOPMENT_TEAM = "";/DEVELOPMENT_TEAM = 28962GZ9UY;/g' ios/App/App.xcodeproj/project.pbxproj
 
       - name: Build Archive
@@ -25,29 +25,28 @@ jobs:
         run: |
           mkdir -p ~/.private_keys
           echo "$APPSTORE_P8_KEY" > ~/.private_keys/AuthKey_$APPSTORE_KEY_ID.p8
-          
           cd ios/App
           
-          # Force the use of the Team ID that matches your Profile
+          # 1. Create the Archive
           xcodebuild archive \
-            -project App.xcodeproj \
-            -scheme App \
-            -configuration Release \
-            -archivePath App.xcarchive \
-            -destination "generic/platform=iOS" \
-            -allowProvisioningUpdates \
-            -allowProvisioningDeviceRegistration \
-            -authenticationKeyID $APPSTORE_KEY_ID \
+            -project App.xcodeproj -scheme App -configuration Release \
+            -archivePath App.xcarchive -destination "generic/platform=iOS" \
+            -allowProvisioningUpdates -authenticationKeyID $APPSTORE_KEY_ID \
             -authenticationKeyIssuerID $APPSTORE_ISSUER_ID \
             -authenticationKeyPath ~/.private_keys/AuthKey_$APPSTORE_KEY_ID.p8 \
-            DEVELOPMENT_TEAM=28962GZ9UY \
-            CODE_SIGN_STYLE=Automatic
+            DEVELOPMENT_TEAM=28962GZ9UY
+          
+          # 2. Export the .ipa file (The one for TestFlight)
+          echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://apple.com"><plist version="1.0"><dict><key>method</key><string>app-store</string><key>teamID</key><string>28962GZ9UY</string><key>uploadBitcode</key><false/><key>compileBitcode</key><false/><key>signingStyle</key><string>automatic</string></dict></plist>' > exportOptions.plist
+          
+          xcodebuild -exportArchive \
+            -archivePath App.xcarchive -exportOptionsPlist exportOptions.plist -exportPath output \
+            -allowProvisioningUpdates -authenticationKeyID $APPSTORE_KEY_ID \
+            -authenticationKeyIssuerID $APPSTORE_ISSUER_ID \
+            -authenticationKeyPath ~/.private_keys/AuthKey_$APPSTORE_KEY_ID.p8
 
-      - name: Upload Result
-        if: always()
+      - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
-          name: NS-Stats-App-Archive
-          path: |
-            ios/App/App.xcarchive
-            **/*.ipa
+          name: NS-Stats-IPA
+          path: ios/App/output/*.ipa
