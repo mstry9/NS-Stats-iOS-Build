@@ -14,9 +14,6 @@ jobs:
           npm install
           npx cap add ios
           npx cap sync ios
-          
-          # This is the "Nuclear Option" - it finds EVERY instance of an empty team and forces yours in
-          find ios -name "project.pbxproj" -exec sed -i '' 's/DEVELOPMENT_TEAM = "";/DEVELOPMENT_TEAM = 28962GZ9UY;/g' {} +
 
       - name: Build Archive
         env:
@@ -26,7 +23,10 @@ jobs:
         run: |
           mkdir -p ~/.private_keys
           echo "$APPSTORE_P8_KEY" > ~/.private_keys/AuthKey_$APPSTORE_KEY_ID.p8
+          
           cd ios/App
+          
+          # Using your ACTUAL Team ID: 209155482
           xcodebuild archive \
             -project App.xcodeproj \
             -scheme App \
@@ -36,4 +36,13 @@ jobs:
             -allowProvisioningUpdates \
             -authenticationKeyID $APPSTORE_KEY_ID \
             -authenticationKeyIssuerID $APPSTORE_ISSUER_ID \
-            -authenticationKeyPath ~/.private_keys/AuthKey_$APPSTORE_KEY_ID.p8
+            -authenticationKeyPath ~/.private_keys/AuthKey_$APPSTORE_KEY_ID.p8 \
+            DEVELOPMENT_TEAM=209155482 \
+            CODE_SIGN_STYLE=Automatic
+            
+      - name: Upload Result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: NS-Stats-Build-IPA
+          path: ios/App/App.xcarchive
