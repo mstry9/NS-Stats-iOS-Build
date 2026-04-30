@@ -30,7 +30,7 @@ jobs:
           
           cd ios/App
           
-          # We pass EVERYTHING here: Team ID, Manual Signing, and the Profile Name
+          # Force EVERY signing variable to use Distribution
           xcodebuild archive \
             -project App.xcodeproj \
             -scheme App \
@@ -43,6 +43,7 @@ jobs:
             -allowProvisioningUpdates \
             DEVELOPMENT_TEAM="28962GZ9UY" \
             CODE_SIGN_STYLE="Manual" \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
             PROVISIONING_PROFILE_SPECIFIER="NS_Stats_Distribution"
 
       - name: Export IPA
