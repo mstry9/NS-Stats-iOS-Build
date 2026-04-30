@@ -3,17 +3,33 @@ on: [push]
 
 jobs:
   build:
-    runs-on: macos-26  # Use the new macOS 26 runner for the iOS 26 SDK
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: Install Dependencies
+      - name: Install Dependencies & Generate Icons
         run: |
           npm install
+          # Install the tool that creates all the icon sizes
+          npm install @capacitor/assets --save-dev
+          
           rm -rf ios
           npx cap add ios
+          
+          # Generate icons from your assets/icon.png
+          npx capacitor-assets generate --ios --icon-path assets/icon.png
+          
+          # Set the Team ID and stop the "Manage Compliance" pop-up
+          sed -i '' 's/DEVELOPMENT_TEAM = "";/DEVELOPMENT_TEAM = 28962GZ9UY;/g' ios/App/App.xcodeproj/project.pbxproj
+          
+          # This line fixes the "Missing Compliance" problem automatically
+          /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" ios/App/App/Info.plist
+          
           npx cap sync ios
 
       - name: Build Archive
@@ -58,7 +74,6 @@ jobs:
           APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
           APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
         run: |
-          # This command uploads your generated IPA to App Store Connect
           xcrun altool --upload-app \
             -f ios/App/output/*.ipa \
             -t ios \
