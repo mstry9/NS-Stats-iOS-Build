@@ -7,11 +7,6 @@
     <key>teamID</key>
     <string>28962GZ9UY</string>
     <key>signingStyle</key>
-    <string>manual</string>
-    <key>provisioningProfiles</key>
-    <dict>
-        <key>com.mstry9.stats</key>
-        <string>NS_Stats_Distribution</string>
-    </dict>
+    <string>automatic</string>
 </dict>
 </plist>
