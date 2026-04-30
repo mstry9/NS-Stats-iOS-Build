@@ -29,8 +29,6 @@ jobs:
           echo "$APPSTORE_P8_KEY" > ~/.private_keys/AuthKey_$APPSTORE_KEY_ID.p8
           
           cd ios/App
-          
-          # We use -allowProvisioningUpdates to let the API Key 'authenticate' the runner
           xcodebuild archive \
             -project App.xcodeproj \
             -scheme App \
@@ -58,8 +56,14 @@ jobs:
             -authenticationKeyPath ~/.private_keys/AuthKey_$APPSTORE_KEY_ID.p8 \
             -allowProvisioningUpdates
 
-      - name: Upload Finished App
-        uses: actions/upload-artifact@v4
-        with:
-          name: NS-Stats-IPA
-          path: ios/App/output/*.ipa
+      - name: Upload to TestFlight
+        env:
+          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+        run: |
+          # This command uploads your generated IPA to App Store Connect
+          xcrun altool --upload-app \
+            -f ios/App/output/*.ipa \
+            -t ios \
+            --apiKey $APPSTORE_KEY_ID \
+            --apiIssuer $APPSTORE_ISSUER_ID
