@@ -15,20 +15,21 @@ jobs:
       - name: Install Dependencies & Generate Icons
         run: |
           npm install
-          # Install the tool that creates all the icon sizes
+          # Install the asset tool locally
           npm install @capacitor/assets --save-dev
           
+          # Fresh iOS project creation
           rm -rf ios
           npx cap add ios
           
-          # Generate icons from your assets/icon.png
-          npx capacitor-assets generate --ios --icon-path assets/icon.png
+          # Generate icons from your assets folder
+          npx capacitor-assets generate --ios --assetPath assets
           
-          # Set the Team ID and stop the "Manage Compliance" pop-up
+          # Set Team ID in the project file
           sed -i '' 's/DEVELOPMENT_TEAM = "";/DEVELOPMENT_TEAM = 28962GZ9UY;/g' ios/App/App.xcodeproj/project.pbxproj
           
-          # This line fixes the "Missing Compliance" problem automatically
-          /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" ios/App/App/Info.plist
+          # Inject 'No Encryption' setting to stop the 'Manage' pop-up
+          /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" ios/App/App/Info.plist || /usr/libexec/PlistBuddy -c "Set :ITSAppUsesNonExemptEncryption false" ios/App/App/Info.plist
           
           npx cap sync ios
 
