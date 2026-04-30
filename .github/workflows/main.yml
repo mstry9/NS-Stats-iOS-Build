@@ -1,7 +1,7 @@
 name: Build iOS
 on:
   push:
-  workflow_dispatch: # This adds the "Run workflow" button in the Actions tab
+  workflow_dispatch:
 
 jobs:
   build:
@@ -18,16 +18,10 @@ jobs:
         run: |
           npm install
           npm install @capacitor/assets --save-dev
-          
           rm -rf ios
           npx cap add ios
-          
-          # Generate icons from your assets folder
           npx capacitor-assets generate --ios --assetPath assets
-          
-          # Inject 'No Encryption' setting for TestFlight compliance
           /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" ios/App/App/Info.plist || /usr/libexec/PlistBuddy -c "Set :ITSAppUsesNonExemptEncryption false" ios/App/App/Info.plist
-          
           npx cap sync ios
 
       - name: Build Archive
@@ -38,10 +32,8 @@ jobs:
         run: |
           mkdir -p ~/.private_keys
           echo "$APPSTORE_P8_KEY" > ~/.private_keys/AuthKey_$APPSTORE_KEY_ID.p8
-          
           cd ios/App
-          
-          # WE FORCE THE TEAM ID HERE (DEVELOPMENT_TEAM=...)
+          # Forced manual signing identity to stop the 'Development' certificate creation
           xcodebuild archive \
             -project App.xcodeproj \
             -scheme App \
@@ -52,7 +44,9 @@ jobs:
             -authenticationKeyIssuerID $APPSTORE_ISSUER_ID \
             -authenticationKeyPath ~/.private_keys/AuthKey_$APPSTORE_KEY_ID.p8 \
             -allowProvisioningUpdates \
-            DEVELOPMENT_TEAM="28962GZ9UY"
+            DEVELOPMENT_TEAM="28962GZ9UY" \
+            CODE_SIGN_STYLE="Manual" \
+            CODE_SIGN_IDENTITY="Apple Distribution"
 
       - name: Export IPA
         env:
