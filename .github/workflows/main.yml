@@ -1,5 +1,7 @@
 name: Build iOS
-on: [push]
+on:
+  push:
+  workflow_dispatch: # This adds the "Run workflow" button in the Actions tab
 
 jobs:
   build:
