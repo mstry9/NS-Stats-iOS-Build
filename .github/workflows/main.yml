@@ -3,12 +3,9 @@ on: [push]
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-26  # Use the new macOS 26 runner for the iOS 26 SDK
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
         with:
           node-version: 22
 
