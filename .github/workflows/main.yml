@@ -17,7 +17,7 @@ jobs:
           npm install
           rm -rf ios
           npx cap add ios
-          # FORCE Team ID and set signing to Manual to stop the certificate spam
+          # Lock in Team ID and Manual signing to use your specific profile
           sed -i '' 's/DEVELOPMENT_TEAM = "";/DEVELOPMENT_TEAM = 28962GZ9UY;/g' ios/App/App.xcodeproj/project.pbxproj
           sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' ios/App/App.xcodeproj/project.pbxproj
           npx cap sync ios
@@ -33,7 +33,7 @@ jobs:
           
           cd ios/App
           
-          # 1. Build the Archive
+          # 1. Create the Archive using the Distribution Profile
           xcodebuild archive \
             -project App.xcodeproj \
             -scheme App \
@@ -42,9 +42,11 @@ jobs:
             -destination "generic/platform=iOS" \
             -authenticationKeyID $APPSTORE_KEY_ID \
             -authenticationKeyIssuerID $APPSTORE_ISSUER_ID \
-            -authenticationKeyPath ~/.private_keys/AuthKey_$APPSTORE_KEY_ID.p8
+            -authenticationKeyPath ~/.private_keys/AuthKey_$APPSTORE_KEY_ID.p8 \
+            PROVISIONING_PROFILE_SPECIFIER="NS_Stats_Distribution" \
+            CODE_SIGN_STYLE=Manual
 
-          # 2. Export the IPA using your plist (This is the final step)
+          # 2. Export the final .ipa using the exportOptions.plist
           xcodebuild -exportArchive \
             -archivePath App.xcarchive \
             -exportOptionsPlist ../../exportOptions.plist \
