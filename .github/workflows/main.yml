@@ -30,7 +30,7 @@ jobs:
           
           cd ios/App
           
-          # Force EVERY signing variable to use Distribution
+          # We use -allowProvisioningUpdates to let the API Key 'authenticate' the runner
           xcodebuild archive \
             -project App.xcodeproj \
             -scheme App \
@@ -41,10 +41,7 @@ jobs:
             -authenticationKeyIssuerID $APPSTORE_ISSUER_ID \
             -authenticationKeyPath ~/.private_keys/AuthKey_$APPSTORE_KEY_ID.p8 \
             -allowProvisioningUpdates \
-            DEVELOPMENT_TEAM="28962GZ9UY" \
-            CODE_SIGN_STYLE="Manual" \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
-            PROVISIONING_PROFILE_SPECIFIER="NS_Stats_Distribution"
+            DEVELOPMENT_TEAM="28962GZ9UY"
 
       - name: Export IPA
         env:
