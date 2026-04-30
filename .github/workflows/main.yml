@@ -23,9 +23,6 @@ jobs:
           # Generate icons from your assets folder
           npx capacitor-assets generate --ios --assetPath assets
           
-          # Force Team ID into the project file
-          sed -i '' 's/DEVELOPMENT_TEAM = "";/DEVELOPMENT_TEAM = 28962GZ9UY;/g' ios/App/App.xcodeproj/project.pbxproj
-          
           # Inject 'No Encryption' setting for TestFlight compliance
           /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" ios/App/App/Info.plist || /usr/libexec/PlistBuddy -c "Set :ITSAppUsesNonExemptEncryption false" ios/App/App/Info.plist
           
@@ -42,7 +39,7 @@ jobs:
           
           cd ios/App
           
-          # Use -allowProvisioningUpdates to let the API handle certificates
+          # WE FORCE THE TEAM ID HERE (DEVELOPMENT_TEAM=...)
           xcodebuild archive \
             -project App.xcodeproj \
             -scheme App \
@@ -52,7 +49,8 @@ jobs:
             -authenticationKeyID $APPSTORE_KEY_ID \
             -authenticationKeyIssuerID $APPSTORE_ISSUER_ID \
             -authenticationKeyPath ~/.private_keys/AuthKey_$APPSTORE_KEY_ID.p8 \
-            -allowProvisioningUpdates
+            -allowProvisioningUpdates \
+            DEVELOPMENT_TEAM="28962GZ9UY"
 
       - name: Export IPA
         env:
