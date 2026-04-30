@@ -17,8 +17,6 @@ jobs:
           npm install
           rm -rf ios
           npx cap add ios
-          # Inject Team ID
-          sed -i '' 's/DEVELOPMENT_TEAM = "";/DEVELOPMENT_TEAM = 28962GZ9UY;/g' ios/App/App.xcodeproj/project.pbxproj
           npx cap sync ios
 
       - name: Build Archive
@@ -32,7 +30,7 @@ jobs:
           
           cd ios/App
           
-          # ARCHIVE: Using allowProvisioningUpdates to download your manual profile
+          # We pass EVERYTHING here: Team ID, Manual Signing, and the Profile Name
           xcodebuild archive \
             -project App.xcodeproj \
             -scheme App \
@@ -42,9 +40,17 @@ jobs:
             -authenticationKeyID $APPSTORE_KEY_ID \
             -authenticationKeyIssuerID $APPSTORE_ISSUER_ID \
             -authenticationKeyPath ~/.private_keys/AuthKey_$APPSTORE_KEY_ID.p8 \
-            -allowProvisioningUpdates
+            -allowProvisioningUpdates \
+            DEVELOPMENT_TEAM="28962GZ9UY" \
+            CODE_SIGN_STYLE="Manual" \
+            PROVISIONING_PROFILE_SPECIFIER="NS_Stats_Distribution"
 
-          # EXPORT: Using the plist to package the IPA
+      - name: Export IPA
+        env:
+          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+        run: |
+          cd ios/App
           xcodebuild -exportArchive \
             -archivePath App.xcarchive \
             -exportOptionsPlist ../../exportOptions.plist \
