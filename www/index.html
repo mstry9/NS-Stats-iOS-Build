@@ -609,20 +609,22 @@ async function updateSensorCountdown() {
   const d = Math.floor(sec / 86400);
   const h = Math.floor((sec % 86400) / 3600);
   const m = Math.floor((sec % 3600) / 60);
-  const s = sec % 60;
 
-  sensorEl.textContent =
-    `Sensor ends in ` +
-    `${String(d).padStart(2,"0")}:` +
-    `${String(h).padStart(2,"0")}:` +
-    `${String(m).padStart(2,"0")}:` +
-    `${String(s).padStart(2,"0")}`;
+  // Build display text: hide "0d" on last day
+  let text = "Sensor ends in ";
+
+  if (d > 0) {
+    text += `${d}d `;
+  }
+
+  text += `${h}h ${m}m`;
+
+  sensorEl.textContent = text;
 }
 
 updateSensorCountdown();
 setInterval(updateSensorCountdown, 1000);
 </script>
-
 
 </body>
 </html>
