@@ -583,7 +583,6 @@ async function updateSensorCountdown() {
       // Always trust Nightscout over cached value
       localStorage.setItem("cgmStart", newStart);
       storedStart = newStart;
-      }
     }
   } catch (e) {
     // Ignore fetch errors; fall back to stored value
