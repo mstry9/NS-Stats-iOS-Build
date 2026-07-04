@@ -96,7 +96,10 @@ jobs:
           ')
 
           # list Development certs, oldest first
-          RESPONSE=$(curl -s -H "Authorization: Bearer $TOKEN" \
+          # NOTE: --globoff is required, otherwise curl tries to interpret the
+          # square brackets in ?filter[certificateType]= as its own glob syntax
+          # and fails with "exit code 3" (CURLE_URL_MALFORMED) before sending anything.
+          RESPONSE=$(curl --globoff -s -H "Authorization: Bearer $TOKEN" \
             "https://api.appstoreconnect.apple.com/v1/certificates?filter[certificateType]=IOS_DEVELOPMENT&sort=id&limit=200")
 
           # keep the newest 2, delete the rest
@@ -109,6 +112,6 @@ jobs:
           while read -r ID; do
             [ -z "$ID" ] && continue
             echo "Deleting certificate $ID"
-            curl -s -X DELETE -H "Authorization: Bearer $TOKEN" \
+            curl --globoff -s -X DELETE -H "Authorization: Bearer $TOKEN" \
               "https://api.appstoreconnect.apple.com/v1/certificates/$ID"
           done < delete_ids.txt
