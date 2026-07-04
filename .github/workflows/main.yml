@@ -100,7 +100,7 @@ jobs:
           # square brackets in ?filter[certificateType]= as its own glob syntax
           # and fails with "exit code 3" (CURLE_URL_MALFORMED) before sending anything.
           RESPONSE=$(curl --globoff -s -H "Authorization: Bearer $TOKEN" \
-            "https://api.appstoreconnect.apple.com/v1/certificates?filter[certificateType]=IOS_DEVELOPMENT&sort=id&limit=200")
+            "https://api.appstoreconnect.apple.com/v1/certificates?filter[certificateType]=DEVELOPMENT&sort=id&limit=200")
 
           # keep the newest 2, delete the rest
           echo "$RESPONSE" | ruby -rjson -e '
