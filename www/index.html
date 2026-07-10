@@ -553,7 +553,7 @@
     };
   </script>
 
-  <!-- ⭐ COUNTDOWN SCRIPT ⭐ -->
+<!-- ⭐ COUNTDOWN SCRIPT ⭐ -->
 <script>
 const sensorEl = document.getElementById("sensor-countdown");
 
@@ -590,7 +590,7 @@ async function updateSensorCountdown() {
   }
 
   if (!storedStart) {
-    sensorEl.textContent = "No Sensor Start found";
+    sensorEl.textContent = "";
     return;
   }
 
@@ -609,14 +609,16 @@ async function updateSensorCountdown() {
   const h = Math.floor((sec % 86400) / 3600);
   const m = Math.floor((sec % 3600) / 60);
 
-  // Build display text: hide "0d" on last day
+  // Libre 3 Plus style: days only until last day, then hours and minutes
   let text = "Sensor ends in ";
 
   if (d > 0) {
-    text += `${d}d `;
+    // More than 1 day left: show only days
+    text += `${d}d`;
+  } else {
+    // Last day: show hours and minutes
+    text += `${h}h ${m}m`;
   }
-
-  text += `${h}h ${m}m`;
 
   sensorEl.textContent = text;
 }
