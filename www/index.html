@@ -480,7 +480,7 @@
       const now = new Date();
       const past = new Date(now.getTime() - days * 24 * 60 * 60 * 1000).toISOString();
 
-      const url = `${BASE_URL}/api/v1/entries/sgv.json?find[dateString][$gte]=${encodeURIComponent(past)}&count=0&token=${TOKEN}`;
+      const url = `${BASE_URL}/api/v1/entries/sgv.json?find[dateString][$gte]=${encodeURIComponent(past)}&count=130000&token=${TOKEN}`;
 
       try {
         const res = await fetch(url);
